@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reklamation - Cherry Bikes Nürnberg</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: #f4f6f8; padding: 20px; color: #333; }
+        .container { max-width: 500px; margin: 0 auto; background: white; padding: 24px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        h1 { font-size: 1.5rem; margin-bottom: 20px; color: #1a1a1a; text-align: center; }
+        .form-group { margin-bottom: 16px; }
+        label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; }
+        input[type="text"], input[type="email"], textarea { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem; }
+        input[readonly] { background-color: #e9ecef; color: #495057; cursor: not-allowed; }
+        input[type="file"] { display: none; }
+        .file-upload-btn { display: block; width: 100%; padding: 12px; background: #e9ecef; border: 2px dashed #adb5bd; border-radius: 8px; text-align: center; cursor: pointer; font-weight: 600; color: #495057; }
+        .preview-container { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+        .preview-img { width: 80px; height: 80px; object-fit: cover; border-radius: 6px; border: 1px solid #ddd; }
+        button[type="submit"] { width: 100%; padding: 14px; background: #007bff; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        button[type="submit"]:active { background: #0056b3; }
+        .hint { font-size: 0.8rem; color: #6c757d; margin-top: 6px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Reklamation erfassen</h1>
+    <form id="repairForm">
+        <div class="form-group">
+            <label for="empfaenger">Empfänger-E-Mail</label>
+            <input type="email" id="empfaenger" value="fb@cherry-bikes-nuernberg.de" readonly>
+        </div>
+        <div class="form-group">
+            <label for="auftrag">Auftrag / Nummer</label>
+            <input type="text" id="auftrag" required placeholder="z. B. 2026-001">
+        </div>
+        <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" id="name" required placeholder="Kunden- oder Mitarbeitername">
+        </div>
+        <div class="form-group">
+            <label for="hersteller">Hersteller</label>
+            <input type="text" id="hersteller" required placeholder="z. B. Bosch, Shimano">
+        </div>
+        <div class="form-group">
+            <label for="defekt">Defektes Teil</label>
+            <textarea id="defekt" rows="3" required placeholder="Beschreibung des defekten Teils..."></textarea>
+        </div>
+        <div class="form-group">
+            <label>Fotos anfügen</label>
+            <label for="fotoInput" class="file-upload-btn">📷 Foto aufnehmen / auswählen</label>
+            <input type="file" id="fotoInput" accept="image/*" multiple capture="environment">
+            <div class="preview-container" id="preview"></div>
+            <p class="hint">Hinweis: Die ausgewählten Fotos können nach dem Öffnen der E-Mail-App als Anhang hinzugefügt werden.</p>
+        </div>
+        <button type="submit">Reklamation per Mail senden</button>
+    </form>
+</div>
+
+<script>
+    const fotoInput = document.getElementById('fotoInput');
+    const preview = document.getElementById('preview');
+
+    fotoInput.addEventListener('change', function() {
+        preview.innerHTML = '';
+        Array.from(this.files).forEach(file => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.className = 'preview-img';
+                preview.appendChild(img);
+            }
+            reader.readAsDataURL(file);
+        });
+    });
+
+    document.getElementById('repairForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const empfaenger = document.getElementById('empfaenger').value;
+        const auftrag = document.getElementById('auftrag').value;
+        const name = document.getElementById('name').value;
+        const hersteller = document.getElementById('hersteller').value;
+        const defekt = document.getElementById('defekt').value;
+
+        const betreff = encodeURIComponent(`Reklamation: Auftrag ${auftrag} - ${hersteller}`);
+        const bodyText = encodeURIComponent(
+            `Hallo Team,\n\nhier ist eine neue Reklamation:\n\n` +
+            `• Auftrag / Nummer: ${auftrag}\n` +
+            `• Name: ${name}\n` +
+            `• Hersteller: ${hersteller}\n` +
+            `• Defektes Teil: ${defekt}\n\n` +
+            `(Bitte die aufgenommenen Fotos an diese Mail anhängen, falls sie in der E-Mail-App noch nicht angefügt sind.)\n\n` +
+            `Mit freundlichen Grüßen`
+        );
+
+        // Öffnet das Standard-E-Mail-Programm auf Android
+        window.location.href = `mailto:${empfaenger}?subject=${betreff}&body=${bodyText}`;
+    });
+</script>
+
+</body>
+</html>
